@@ -13,6 +13,9 @@ class CharacterEncoder():
         self.base = len(mapping)
 
     def decode(self, slug):
+        if not set(slug).issubset(self.mapping):
+            raise ValueError(f"invalid character in {slug}")
+
         result = 0
         for i, c in enumerate(slug[::-1]):
             result += self.reverse_mapping.get(c) * self.base ** i

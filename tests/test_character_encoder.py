@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
+import pytest
+
 from character_encoder import CharacterEncoder
 # run tests with:
 # python -m pytest tests/
@@ -37,3 +39,14 @@ def test_special_values():
     assert(61 == encoder.decode('a9'))
     assert(62 == encoder.decode('ba'))
     assert(sys.maxsize == encoder.decode(encoder.encode(sys.maxsize)))
+
+
+def test_throws_value_error():
+    with pytest.raises(ValueError):
+        encoder.decode("alskdfj3./.")
+
+    with pytest.raises(ValueError):
+        encoder.decode(".")
+
+    with pytest.raises(ValueError):
+        encoder.decode("hello-world")

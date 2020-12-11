@@ -101,7 +101,7 @@ def shortcut(slug):
         return app.send_static_file(slug)
 
     try:
-        url_id = Url.slug_to_id(slug)
+        url_id = url_shortener.decode(slug)
     except ValueError:
         return abort(404)
 

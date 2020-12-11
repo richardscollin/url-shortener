@@ -2,14 +2,12 @@
 import logging
 from flask import abort, Flask, jsonify, redirect, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import validates
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from character_encoder import CharacterEncoder
 
 url_shortener = CharacterEncoder()
 
-logging.basicConfig(level=logging.DEBUG,
-                    format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -85,7 +83,7 @@ def create_link(url):
     except IntegrityError as e:
         # Triggers when inserting an existing url
         raise AppError(str(e))
-    except ValueError as e:
+    except ValueError:
         raise AppError("A Value error occurred")
         # raise AppError("Url already exists")
     except SQLAlchemyError as e:

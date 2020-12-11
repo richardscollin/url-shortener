@@ -1,5 +1,47 @@
 # URL Shortener
 
+## Installation
+
+First set up a virtual environment using the venv module:
+
+```
+python3 -m venv myenv
+```
+
+Activate the virtual environment:
+
+```
+source myenv/bin/activate
+```
+
+Then install the project using pip:
+
+```
+pip install -r requirements.txt
+```
+
+The webserver can then be launched with
+the gunicorn runner:
+
+```
+gunicorn app:app
+```
+
+Alternatively it can be launched directly with python:
+
+```
+python app.py
+```
+
+Before pushing commits ensure they pass the linter and tests:
+
+```
+flake8
+python -m pylint tests/
+```
+
+## Design
+
 This is a simple url shortner service in Flask using SQLAlchemy as an ORM
 wrapper over an SQLite Database.
 

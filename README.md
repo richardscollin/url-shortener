@@ -74,3 +74,14 @@ Before pushing commits ensure they pass the linter and tests:
 flake8
 python -m pylint tests/
 ```
+
+## Deployment
+
+The app is currently being run on a free heroku instance with postgres as the database.
+This has the following trade offs:
+
+Current Cost: Free
+Database is limited to 10,000 records and 1GB of data.
+
+Heroku also has the downside that the app is not always loaded into memory so the
+first request in a while may fail or be very slow.

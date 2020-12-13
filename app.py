@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 from flask import abort, Flask, jsonify, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.orm import validates
+from urllib.parse import urlparse
 from character_encoder import CharacterEncoder
-
-url_shortener = CharacterEncoder()
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config.from_object('config.Config')
 db = SQLAlchemy(app)
 
+url_shortener = CharacterEncoder()
 
 class Url(db.Model):
     """
@@ -38,6 +39,44 @@ class Url(db.Model):
         """
         return url_shortener.encode(self.id)
 
+    @validates('href')
+    def validate_href(self, key, href):
+        """
+        This function validates that the url is valid.
+
+        It also prefixes the http:// schema to the url
+        if it was not passed in by the user.
+        """
+        if len(href) > 2000:
+            raise AppError(f"Url too long in length. Limit: 2000 characters, Length: {len(href)}.")
+
+        split_url = urlparse(href, scheme="http")
+        # urlparse will only parse valid domain names into
+        # netloc. However there are several valid domain names
+        # we might not want to redirect to.
+        # it also does not check that the dns name is valid
+
+        domain = split_url.netloc
+        domain_with_port = split_url.netloc.rsplit(':', 2)
+        if len(domain_with_port) == 2:
+            (domain, _) = domain_with_port
+
+        if split_url.netloc == '' \
+            or split_url.netloc in ["localhost", "127.0.0.1"] \
+            or domain in ["localhost", "127.0.0.1"]:
+            raise AppError(f"Invalid url: {href}")
+        
+        # There are numerous other cases we could
+        # validate. ipv6 etc. for now to keep simplicity
+        # I will not implement that validation.
+        # Worst case we attempt to redirect to an invalid
+        # domain which is acceptable
+
+        # We return the url this way because it prepends the http
+        # schema if it was missing
+        return split_url.geturl()
+
+
 
 class AppError(Exception):
     """Wrap base Exception class for app custom errors"""
@@ -50,6 +89,8 @@ class AppError(Exception):
 @ app.route("/", methods=["GET", "POST"])
 def index():
     added = None
+    urls = db.session.query(Url).order_by(Url.id.desc()).limit(10)
+    # TODO handle sql error
 
     if request.method == "POST":
         try:
@@ -60,9 +101,8 @@ def index():
             added = create_link(url)
 
         except AppError as e:
-            return jsonify({"success": False, "message": e.message})
+            return render_template("index.html", error=e, urls=urls)
 
-    urls = db.session.query(Url).order_by(Url.id.desc()).limit(10)
     return render_template("index.html", url=added, urls=urls)
 
 
@@ -83,15 +123,12 @@ def create_link(url):
 
         return new_link
     except IntegrityError as e:
-        # Triggers when inserting an existing url
+        # May trigger when inserting an existing url
         raise AppError(str(e))
     except ValueError:
         raise AppError("A Value error occurred")
-        # raise AppError("Url already exists")
     except SQLAlchemyError as e:
         # catch and rethrow exceptions with custom messages
-        # TODO catch errors where url doesn't validate
-        # and where
         raise AppError("SQLAlchemyError: " + str(e))
 
 
@@ -111,6 +148,5 @@ def shortcut(slug):
 
 
 if __name__ == "__main__":
-    db.drop_all()
     db.create_all()
     app.run()

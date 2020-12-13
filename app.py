@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import logging
 from flask import abort, Flask, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
@@ -28,7 +29,6 @@ db.create_all()
 @ app.route("/", methods=["GET", "POST"])
 def index():
     added = None
-
     urls = db.session.query(models.Url).order_by(models.Url.id.desc()).limit(10)
 
     if request.method == "POST":
@@ -40,9 +40,9 @@ def index():
             added = create_link(url)
 
         except AppError as e:
-            return render_template("index.html", base_url=request.host_url , error=e, urls=urls)
+            return render_template("index.html", base_url=request.host, error=e, urls=urls)
 
-    return render_template("index.html", base_url=request.host , url=added, urls=urls)
+    return render_template("index.html", base_url=request.host, url=added, urls=urls)
 
 
 def create_link(url):
@@ -52,6 +52,13 @@ def create_link(url):
     :throws: AppError on any failure i.e. database
     """
     try:
+        # prefix path with http:// if it doesn't already start with
+        # http:// or https://
+        # Note: we do this here instead of in the url validation function
+        # to ensure the exists query works properly
+        if not re.match(r"https?://", url):
+            url = "http://" + url
+
         exists = models.Url.query.filter_by(href=url).first()
         if exists:
             return exists

@@ -60,7 +60,7 @@ class Url(db.Model):
         # this blog post describes in detail the following regex
         # https://medium.com/@vaghasiyaharryk/9ab484a1b430
         # Summary of rules:
-        # Valid url cannot start with -
+        # Valid url cannot start or end with -
         # The valid chars are in range [A-Za-z0-9-]
         # and there must be between 1 and 63 characters
         # finally restrict the tld to between 2 and 6 chars

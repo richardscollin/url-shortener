@@ -32,7 +32,8 @@ class Url(db.Model):
         """
         return url_shortener.encode(self.id)
 
-    def slug_to_id(self, user_slug):
+    @staticmethod
+    def slug_to_id(user_slug):
         try:
             return url_shortener.decode(user_slug)
         except ValueError:

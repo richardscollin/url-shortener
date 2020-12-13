@@ -1,0 +1,22 @@
+import pytest
+from app import app
+
+@pytest.fixture
+def client():
+    with app.test_client() as client:
+        yield client
+
+def test_add_url(client):
+    root_rv = client.get('/')
+    assert root_rv.status_code == 200
+
+    post_rv = client.post('/', data=dict(url="https://google.com"))
+    redirect_rv = client.get('/ab')
+
+    assert redirect_rv.status_code == 301
+    assert redirect_rv.headers.get("Location") == "https://google.com"
+
+
+def test_add_bad_url(client):
+    post_rv = client.post('/', data=dict(url="Hello World"))
+    assert b"Invalid url" in post_rv.data

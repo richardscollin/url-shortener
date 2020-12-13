@@ -13,7 +13,9 @@ class AppError(Exception):
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
-app.config.from_object('config.Config')
+app.config.from_object('config.DebugConfig')
+# app.config.from_envvar('APP_CONFIG')
+
 db = SQLAlchemy(app)
 
 import models

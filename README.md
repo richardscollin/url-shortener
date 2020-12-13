@@ -85,3 +85,16 @@ Database is limited to 10,000 records and 1GB of data.
 
 Heroku also has the downside that the app is not always loaded into memory so the
 first request in a while may fail or be very slow.
+
+### Configuring Heroku Environment
+
+First install the [heroku cli tool](https://devcenter.heroku.com/articles/heroku-cli).
+
+Ensure that the app has the postgres sql plugin enabled.
+
+To setup the environment variable in the Heroku Environment
+that enables the app to use the Heroku config run the following command:
+
+```
+heroku config:set APP_CONFIG=config.HerokuConfig
+```

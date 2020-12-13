@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔥Url Shortener🔥</title>
+  <style>
+    .wrapper {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <h1>🔥Url Shortener🔥</h1>
+    <div>
+      <form id="url-form" action="/" method="POST">
+        <input name="url" type="text">
+        <button type="submit">Shorten Url</button>
+      </form>
+    </div>
+    <div>
+      {% if url %}
+      <h3>Your link:</h3>
+      <a href="/{{ url.slug }}">{{ url.slug }}</a> to <a href="{{ url.href }}">{{ url.href }}</a>
+      {% endif %}
+    </div>
+    <div>
+      {% if urls %}
+      <h3>Recent Urls</h3>
+      <ul>
+        {% for url in urls %}
+        <li>
+          <a href="/{{ url.slug }}">{{ url.slug }}</a> to <a href="{{ url.href }}">{{ url.href }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
-from flask import abort, Flask, jsonify, redirect, request
+from flask import abort, Flask, jsonify, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from character_encoder import CharacterEncoder
 
 url_shortener = CharacterEncoder()
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,7 +28,7 @@ class Url(db.Model):
 
     """
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String, unique=True, nullable=False)
+    href = db.Column(db.String, unique=True, nullable=False)
 
     @ property
     def slug(self):
@@ -47,22 +47,23 @@ class AppError(Exception):
         super().__init__(message)
 
 
-@ app.route("/")
-def root():
-    return app.send_static_file('index.html')
-
-
-@ app.route("/", methods=["POST"])
+@ app.route("/", methods=["GET", "POST"])
 def index():
-    try:
-        url = request.form.get("url")
-        if not url:
-            raise AppError("Required post parameter: url missing.")
+    added = None
 
-        short_url = create_link(url)
-        return jsonify({"success": True, "url": url, "shortUrl": short_url})
-    except AppError as e:
-        return jsonify({"success": False, "message": e.message})
+    if request.method == "POST":
+        try:
+            url = request.form.get("url")
+            if not url:
+                raise AppError("Required post parameter: url missing.")
+
+            added = create_link(url)
+
+        except AppError as e:
+            return jsonify({"success": False, "message": e.message})
+
+    urls = db.session.query(Url).order_by(Url.id.desc()).limit(10)
+    return render_template("index.html", url=added, urls=urls)
 
 
 def create_link(url):
@@ -72,14 +73,15 @@ def create_link(url):
     :throws: AppError on any failure i.e. database
     """
     try:
-        exists = Url.query.filter_by(url=url).first()
+        exists = Url.query.filter_by(href=url).first()
         if exists:
-            return exists.slug
+            return exists
 
-        new_link = Url(url=url)
+        new_link = Url(href=url)
         db.session.add(new_link)
         db.session.commit()
-        return new_link.slug
+
+        return new_link
     except IntegrityError as e:
         # Triggers when inserting an existing url
         raise AppError(str(e))
@@ -104,8 +106,8 @@ def shortcut(slug):
         return abort(404)
 
     link = Url.query.get_or_404(url_id)
-    app.logger.info(f"Redirecting /{slug} -> {link.url}")
-    return redirect(link.url, code=301)
+    app.logger.info(f"Redirecting /{slug} -> {link.href}")
+    return redirect(link.href, code=301)
 
 
 if __name__ == "__main__":

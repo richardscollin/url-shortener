@@ -96,5 +96,5 @@ To setup the environment variable in the Heroku Environment
 that enables the app to use the Heroku config run the following command:
 
 ```
-heroku config:set APP_CONFIG=config.HerokuConfig
+heroku config:set ON_HEROKU=1
 ```

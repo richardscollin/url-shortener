@@ -1,3 +1,4 @@
+import re
 from sqlalchemy.orm import validates
 from urllib.parse import urlparse
 from app import db, AppError
@@ -49,29 +50,23 @@ class Url(db.Model):
         """
         if len(href) > 2000:
             raise AppError(f"Url too long in length. Limit: 2000 characters, Length: {len(href)}.")
+        
+        # prefix path with http:// if it doesn't already start with http:// or https://
+        if not re.match(r"https?://", href):
+            href = "http://" + href
 
-        split_url = urlparse(href, scheme="http")
-        # urlparse will only parse valid domain names into
-        # netloc. However there are several valid domain names
-        # we might not want to redirect to.
-        # it also does not check that the dns name is valid
+        split_url = urlparse(href)
 
-        domain = split_url.netloc
-        domain_with_port = split_url.netloc.rsplit(':', 2)
-        if len(domain_with_port) == 2:
-            (domain, _) = domain_with_port
-
-        if split_url.netloc == '' \
-            or split_url.netloc in ["localhost", "127.0.0.1"] \
-            or domain in ["localhost", "127.0.0.1"]:
+        # this blog post describes in detail the following regex
+        # https://medium.com/@vaghasiyaharryk/9ab484a1b430
+        # Summary of rules:
+        # Valid url cannot start with -
+        # The valid chars are in range [A-Za-z0-9-]
+        # and there must be between 1 and 63 characters
+        # finally restrict the tld to between 2 and 6 chars
+        if not re.match(r"^((?!-)[A-Za-z0–9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$", split_url.netloc):
             raise AppError(f"Invalid url: {href}")
         
-        # There are numerous other cases we could
-        # validate. ipv6 etc. for now to keep simplicity
-        # I will not implement that validation.
-        # Worst case we attempt to redirect to an invalid
-        # domain which is acceptable
+        # For now I've decided to reject raw IPv4 and IPv6 addresses, and localhost
 
-        # We return the url this way because it prepends the http
-        # schema if it was missing
-        return split_url.geturl()
+        return href

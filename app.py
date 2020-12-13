@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 from flask import abort, Flask, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
@@ -13,8 +14,11 @@ class AppError(Exception):
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
-app.config.from_object('config.DebugConfig')
-# app.config.from_envvar('APP_CONFIG')
+
+if os.environ.get("ON_HEROKU"):
+    app.config.from_object('config.HerokuConfig')
+else:
+    app.config.from_object('config.DebugConfig')
 
 db = SQLAlchemy(app)
 

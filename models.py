@@ -17,6 +17,9 @@ class Url(db.Model):
     our id's start at 0. This seems pretty safe but we could modify
     to use a different autoincrementing int
 
+    Actually sqlite starts indexing at 1. This isnt's a problem though.
+    Our starting shortened url is then '/ab'
+
     """
     id = db.Column(db.Integer, primary_key=True)
     href = db.Column(db.String, unique=True, nullable=False, index=True)

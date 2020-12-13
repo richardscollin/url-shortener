@@ -41,7 +41,7 @@
       <ul>
         {% for url in urls %}
         <li>
-          <a href="/{{ url.slug }}">{{ url.slug }}</a> to <a href="{{ url.href }}">{{ url.href }}</a>
+          <a href="/{{ url.slug }}">{{ base_url }}/{{ url.slug }}</a>
         </li>
         {% endfor %}
       </ul>

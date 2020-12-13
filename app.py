@@ -28,8 +28,8 @@ db.create_all()
 @ app.route("/", methods=["GET", "POST"])
 def index():
     added = None
+
     urls = db.session.query(models.Url).order_by(models.Url.id.desc()).limit(10)
-    # TODO handle sql error
 
     if request.method == "POST":
         try:
@@ -40,9 +40,9 @@ def index():
             added = create_link(url)
 
         except AppError as e:
-            return render_template("index.html", error=e, urls=urls)
+            return render_template("index.html", base_url=request.host_url , error=e, urls=urls)
 
-    return render_template("index.html", url=added, urls=urls)
+    return render_template("index.html", base_url=request.host_url , url=added, urls=urls)
 
 
 def create_link(url):

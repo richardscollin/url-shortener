@@ -36,3 +36,14 @@ def test_add_url_no_http(client):
 def test_add_bad_url(client):
     post_rv = client.post('/', data=dict(url="Hello World"))
     assert b"Invalid url" in post_rv.data
+
+def test_add_localhost(client):
+    post_rv = client.post('/', data=dict(url="localhost"))
+    assert b"Invalid url" in post_rv.data
+
+    post_rv = client.post('/', data=dict(url="localhost:3000"))
+    assert b"Invalid url" in post_rv.data
+
+def test_add_ipv4(client):
+    post_rv = client.post('/', data=dict(url="8.8.8.8"))
+    assert b"Invalid url" in post_rv.data

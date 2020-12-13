@@ -62,10 +62,10 @@ the gunicorn runner:
 gunicorn app:app
 ```
 
-Alternatively it can be launched directly with python:
+Alternatively it can be launched with flask:
 
 ```
-python app.py
+FLASK_APP=app:app flask run
 ```
 
 Before pushing commits ensure they pass the linter and tests:

@@ -29,7 +29,7 @@ class Url(db.Model):
 
     """
     id = db.Column(db.Integer, primary_key=True)
-    href = db.Column(db.String, unique=True, nullable=False)
+    href = db.Column(db.String, unique=True, nullable=False, index=True)
 
     @ property
     def slug(self):
@@ -76,7 +76,8 @@ class Url(db.Model):
         # schema if it was missing
         return split_url.geturl()
 
-
+# Must be after Url def
+db.create_all()
 
 class AppError(Exception):
     """Wrap base Exception class for app custom errors"""
@@ -122,11 +123,6 @@ def create_link(url):
         db.session.commit()
 
         return new_link
-    except IntegrityError as e:
-        # May trigger when inserting an existing url
-        raise AppError(str(e))
-    except ValueError:
-        raise AppError("A Value error occurred")
     except SQLAlchemyError as e:
         # catch and rethrow exceptions with custom messages
         raise AppError("SQLAlchemyError: " + str(e))
@@ -145,8 +141,3 @@ def shortcut(slug):
     link = Url.query.get_or_404(url_id)
     app.logger.info(f"Redirecting /{slug} -> {link.href}")
     return redirect(link.href, code=301)
-
-
-if __name__ == "__main__":
-    db.create_all()
-    app.run()

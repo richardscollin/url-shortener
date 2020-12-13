@@ -42,7 +42,7 @@ def index():
         except AppError as e:
             return render_template("index.html", base_url=request.host_url , error=e, urls=urls)
 
-    return render_template("index.html", base_url=request.host_url , url=added, urls=urls)
+    return render_template("index.html", base_url=request.host , url=added, urls=urls)
 
 
 def create_link(url):

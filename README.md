@@ -22,18 +22,46 @@ Requirements:
 
 Please note that you can use your familiar stack for this part.
 
+## Part 1: Deliverables
+
+- A url shortener sevice site
+- Github Repo for the app
+
 ## Design
 
-This is a simple url shortner service in Flask using SQLAlchemy as an ORM
-wrapper over an SQLite Database.
+This is a simple url shortener service in Flask using SQLAlchemy.
 
-I chose to use SQLAlchemy as I've used it before and I know that
-if necessary it's pretty easy to swap out the underlying database.
-That way it could also be deployed using Postrgres as a backend
-with little effort (which might be a requirement for deploying on heroku).
+With SQLAlchemy I am able to use SQLite as the local testing database
+and Postgres as the production database when running on Heroku.
 
 One design decision I made was to not store the shortened url in
-the database. Instead I map the database id to the
+the database. Instead I map the database id to the shortened path.
+
+In order to do the mapping I wrote a class called CharacterEncoder
+which can be configured to use different character sets. For example
+if desired we could remove characters that are commonly mistaken such
+as `l` and `I`. This also enabled me to extend the app in an interesting
+way later on.
+
+One drawback with this approach is that the generated urls are predictable
+and usage could be determined by an external entity. In certain contexts
+this could be a security issue.
+
+## Github Actions
+
+This repo is configured with github actions. A push to the main repo
+will trigger the tests to run. If the tests pass, the code will automatically
+be deployed to the Heroku instance.
+
+## Emoji Extensions 😀
+
+Because I wanted to be a bit creative for the assignment I decided to
+extend the basic functionality of the url shortener and instead map
+the shortened url's to emojis 😀! I also added tests for this as well.
+
+The currently deployed version uses this, but because it's not
+exactly what was requested I wrote the app so that only a configuration
+value need to be changed to use the plain ascii version.
 
 ## Installation
 
@@ -87,6 +115,9 @@ Heroku also has the downside that the app is not always loaded into memory so th
 first request in a while may fail or be very slow.
 
 ### Configuring Heroku Environment
+
+These steps are not necessary to follow unless creating a new seperate
+of the app because it automatically is integrated with github actions.
 
 First install the [heroku cli tool](https://devcenter.heroku.com/articles/heroku-cli).
 

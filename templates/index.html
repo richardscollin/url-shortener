@@ -12,6 +12,10 @@
       justify-content: space-around;
       align-items: center;
     }
+    footer {
+      margin: 40px;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -36,7 +40,7 @@
       {% endif %}
     </div>
     <div>
-      {% if urls %}
+      {% if urls.count() %}
       <h3>Recent Urls</h3>
       <ul>
         {% for url in urls %}
@@ -48,6 +52,9 @@
       {% endif %}
     </div>
   </div>
+  <footer>
+    <a href="https://github.com/richardscollin/url-shortener">View Source on Github!</a>
+  </footer>
 </body>
 
 </html>

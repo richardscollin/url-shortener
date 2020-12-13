@@ -22,14 +22,13 @@ else:
     app.config.from_object('config.DebugConfig')
 
 db = SQLAlchemy(app)
-
-import models
+from models import Url
 db.create_all()
 
 @ app.route("/", methods=["GET", "POST"])
 def index():
     added = None
-    urls = db.session.query(models.Url).order_by(models.Url.id.desc()).limit(10)
+    urls = db.session.query(Url).order_by(Url.id.desc()).limit(10)
 
     if request.method == "POST":
         try:
@@ -59,11 +58,11 @@ def create_link(url):
         if not re.match(r"https?://", url):
             url = "http://" + url
 
-        exists = models.Url.query.filter_by(href=url).first()
+        exists = Url.query.filter_by(href=url).first()
         if exists:
             return exists
 
-        new_link = models.Url(href=url)
+        new_link = Url(href=url)
         db.session.add(new_link)
         db.session.commit()
 
@@ -78,10 +77,10 @@ def redirect_shortened_url(slug):
     if slug in {"favicon.ico", "robots.txt"}:
         return app.send_static_file(slug)
 
-    url_id = models.Url.slug_to_id(slug)
+    url_id = Url.slug_to_id(slug)
     if not url_id:
         return abort(404)
 
-    link = models.Url.query.get_or_404(url_id)
+    link = Url.query.get_or_404(url_id)
     app.logger.info(f"Redirecting /{slug} -> {link.href}")
     return redirect(link.href, code=301)

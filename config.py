@@ -1,6 +1,7 @@
 import os
 
 class Config(object):
+    EMOJI = os.environ.get("EMOJI", True)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 

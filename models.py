@@ -1,10 +1,16 @@
 import re
 from sqlalchemy.orm import validates
 from urllib.parse import urlparse
-from app import db, AppError
+from app import app, db, AppError
 from character_encoder import CharacterEncoder
 
-url_shortener = CharacterEncoder()
+if app.config['EMOJI']:
+    with open("emojis.txt") as f:
+        emoji_data = f.read()
+        emoji_data = emoji_data.replace(" ", "").replace("\n", "")
+    url_shortener = CharacterEncoder(mapping=emoji_data)
+else:
+    url_shortener = CharacterEncoder()
 
 class Url(db.Model):
     """
@@ -51,10 +57,6 @@ class Url(db.Model):
         if len(href) > 2000:
             raise AppError(f"Url too long in length. Limit: 2000 characters, Length: {len(href)}.")
         
-        # prefix path with http:// if it doesn't already start with http:// or https://
-        if not re.match(r"https?://", href):
-            href = "http://" + href
-
         split_url = urlparse(href)
 
         # this blog post describes in detail the following regex

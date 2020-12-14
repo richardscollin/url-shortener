@@ -10,4 +10,5 @@ class DebugConfig(Config):
     DEBUG = True
 
 class HerokuConfig(Config):
+    EMOJI = False
     SQLALCHEMY_DATABASE_URI  = os.environ.get("DATABASE_URL") # Set by Heroku
